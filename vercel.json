@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": "echo 'No build needed'",
+  "builds": [
+    {
+      "src": "api/public.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/public.js"
+    }
+  ],
+  "functions": {
+    "api/public.js": {
+      "maxDuration": 10
+    }
+  }
+}

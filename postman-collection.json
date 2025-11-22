@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "Order Execution Engine API",
+    "description": "DEX Order Execution Engine with WebSocket streaming",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Submit Market Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save orderId for other requests",
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set('orderId', response.orderId);",
+              "    console.log('Order ID:', response.orderId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"market\",\n  \"tokenIn\": \"SOL\",\n  \"tokenOut\": \"USDC\",\n  \"amount\": 100\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/execute",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "execute"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Submit Multiple Orders",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"market\",\n  \"tokenIn\": \"ETH\",\n  \"tokenOut\": \"SOL\",\n  \"amount\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/execute",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "execute"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Order Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{orderId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Queue Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "stats"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Recent Orders",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders?limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Large Order Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"market\",\n  \"tokenIn\": \"BTC\",\n  \"tokenOut\": \"USDC\",\n  \"amount\": 1.5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/execute",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "execute"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Order Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"market\",\n  \"tokenIn\": \"SOL\",\n  \"amount\": -100\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/execute",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "execute"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
