@@ -14,18 +14,16 @@ export class OrderProcessor {
   private worker: Worker | null = null;
   private dexRouter: MockDexRouter;
   private statusCallbacks: Map<string, Function> = new Map();
-  private redisConnection: any;
 
   constructor() {
     this.dexRouter = new MockDexRouter();
     
     // Initialize BullMQ queue with Redis connection options
-    this.redisConnection = process.env.REDIS_URL 
-      ? { url: process.env.REDIS_URL }
-      : { host: process.env.REDIS_HOST || 'localhost', port: parseInt(process.env.REDIS_PORT || '6379') };
-    
     this.queue = new Queue('order-execution', {
-      connection: this.redisConnection,
+      connection: {
+        host: config.redis.host,
+        port: config.redis.port
+      },
       defaultJobOptions: {
         removeOnComplete: 100,
         removeOnFail: 50,
@@ -72,7 +70,10 @@ export class OrderProcessor {
         throw error; // Re-throw for BullMQ retry mechanism
       }
     }, {
-      connection: this.redisConnection,
+      connection: {
+        host: config.redis.host,
+        port: config.redis.port
+      },
       concurrency: 5, // Process up to 5 orders concurrently
       maxStalledCount: 3,
       stalledInterval: 30000
@@ -94,8 +95,13 @@ export class OrderProcessor {
 
   // Process individual order through the execution pipeline
   private async processOrderExecution(orderId: string, orderData: Order, job: Job): Promise<void> {
-    // Update progress for job tracking
+    // Small delay to ensure WebSocket connection is established
+    await this.simulateDelay(100, 200);
+    
+    // Step 0: Confirm order is pending (in case WebSocket missed initial status)
+    this.emitStatus(orderId, OrderStatus.PENDING);
     await job.updateProgress(10);
+    await this.simulateDelay(200, 400);
     
     // Step 1: Route and find best DEX
     this.emitStatus(orderId, OrderStatus.ROUTING);

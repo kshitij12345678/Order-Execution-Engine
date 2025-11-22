@@ -75,20 +75,17 @@ export class OrderModel {
   
   // Store active order in Redis for quick access
   static async setActiveOrder(order: Order): Promise<void> {
-    if (!redisClient) return;
     await redisClient.setEx(`active_order:${order.id}`, 3600, JSON.stringify(order));
   }
   
   // Get active order from Redis
   static async getActiveOrder(id: string): Promise<Order | null> {
-    if (!redisClient) return null;
     const orderData = await redisClient.get(`active_order:${id}`);
     return orderData ? JSON.parse(orderData) : null;
   }
   
   // Remove active order from Redis
   static async removeActiveOrder(id: string): Promise<void> {
-    if (!redisClient) return;
     await redisClient.del(`active_order:${id}`);
   }
   

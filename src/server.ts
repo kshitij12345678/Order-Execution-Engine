@@ -30,27 +30,18 @@ const setupServer = async () => {
 
   // Health check endpoint
   server.get('/health', async (request, reply) => {
-    try {
-      const queueStats = orderProcessor ? await orderProcessor.getQueueStats() : null;
-      const wsConnections = wsService ? wsService.getConnectionCount() : 0;
-      
-      return { 
-        status: 'ok', 
-        timestamp: new Date().toISOString(),
-        services: {
-          database: 'connected',
-          queue: queueStats,
-          websockets: wsConnections
-        }
-      };
-    } catch (error) {
-      // Return a simpler health check if services aren't fully initialized
-      return {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        message: 'Service starting up'
-      };
-    }
+    const queueStats = orderProcessor ? await orderProcessor.getQueueStats() : null;
+    const wsConnections = wsService ? wsService.getConnectionCount() : 0;
+    
+    return { 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'connected',
+        queue: queueStats,
+        websockets: wsConnections
+      }
+    };
   });
 
   // Register order routes
@@ -108,7 +99,7 @@ const start = async () => {
     
     // Start server
     const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-    const host = process.env.HOST || '0.0.0.0';  // Bind to all interfaces for containers
+    const host = process.env.HOST || 'localhost';
     
     await server.listen({ port, host });
     
